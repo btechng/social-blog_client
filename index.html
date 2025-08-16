@@ -1,18 +1,162 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <!-- Meta -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Social Blog+</title>
-    <link href="https://cdn.jsdelivr.net/npm/react-quill@2.0.0/dist/quill.snow.css" rel="stylesheet">
+    <meta
+      name="description"
+      content="Open Vibes – A modern platform for sharing posts, ideas, and discussions."
+    />
+    <meta name="theme-color" content="#2563eb" />
+
+    <!-- Title -->
+    <title>Open Vibes</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <!-- Quill Editor Styles -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/react-quill@2.0.0/dist/quill.snow.css"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS (optional utility layer) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Open Vibes" />
+    <meta
+      property="og:description"
+      content="Share and explore posts with Open Vibes."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yourdomain.com" />
+    <meta property="og:image" content="https://yourdomain.com/preview.jpg" />
+
+    <!-- Styles -->
     <style>
-      body { font-family: system-ui, Arial, sans-serif; }
-      .pager { display:flex; gap:8px; align-items:center; }
-      .pager button { padding:6px 10px; }
+      body {
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9fafb;
+        color: #111827;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      body.dark {
+        background-color: #111827;
+        color: #f9fafb;
+      }
+
+      .pager {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+      }
+
+      .pager button {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      body.dark .pager button {
+        background: #1f2937;
+        color: #f9fafb;
+        border-color: #374151;
+      }
+
+      .pager button:hover {
+        background: #f3f4f6;
+      }
+
+      body.dark .pager button:hover {
+        background: #374151;
+      }
+
+      .pager button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Dark Mode Toggle Button */
+      #theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 50;
+      }
+
+      #theme-toggle:hover {
+        background: #e5e7eb;
+      }
+
+      body.dark #theme-toggle {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+      }
+
+      body.dark #theme-toggle:hover {
+        background: #374151;
+      }
     </style>
   </head>
+
   <body>
+    <button id="theme-toggle">🌙</button>
     <div id="root"></div>
+
+    <script>
+      // Apply saved or system theme
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        document.body.classList.toggle("dark", savedTheme === "dark");
+      } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.body.classList.add("dark");
+      }
+
+      // Toggle theme manually
+      const btn = document.getElementById("theme-toggle");
+      function updateBtn() {
+        btn.textContent = document.body.classList.contains("dark")
+          ? "☀️"
+          : "🌙";
+      }
+      updateBtn();
+
+      btn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        const mode = document.body.classList.contains("dark")
+          ? "dark"
+          : "light";
+        localStorage.setItem("theme", mode);
+        updateBtn();
+      });
+    </script>
+
+    <!-- React App -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

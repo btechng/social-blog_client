@@ -1,51 +1,108 @@
-import React, { useState } from 'react'
-import { api } from '../api'
-import ReactQuill from 'react-quill'
+import React, { useState } from "react";
+import { api } from "../api";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
-export default function PostEditor({ initial = null, onSaved }) {
-  const [title, setTitle] = useState(initial?.title || '')
-  const [content, setContent] = useState(initial?.content || '')
-  const [image, setImage] = useState(null)
-  const [loading, setLoading] = useState(false)
+export default function PostEditor({ onSaved }) {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleImage = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => setImage(reader.result)
-    reader.readAsDataURL(file)
+  async function handleImageUpload(file) {
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "social_blog_upload");
+    try {
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dkjvfszog/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+      setImage(data.secure_url);
+    } catch (err) {
+      alert("Upload failed");
+    }
+    setUploading(false);
   }
 
-  async function save() {
-    setLoading(true)
-    try {
-      let imageUrl = initial?.imageUrl || ''
-      if (image) {
-        const up = await api.post('/uploads', { image })
-        imageUrl = up.data.url
-      }
-      const payload = { title, content, imageUrl }
-      if (initial?._id) {
-        const res = await api.put('/posts/' + initial._id, payload)
-        onSaved(res.data)
-      } else {
-        const res = await api.post('/posts', payload)
-        onSaved(res.data)
-      }
-      setTitle(''); setContent(''); setImage(null)
-    } finally {
-      setLoading(false)
-    }
+  async function submit(e) {
+    e.preventDefault();
+    const res = await api.post("/posts", { title, content, imageUrl: image });
+    onSaved(res.data);
+    setTitle("");
+    setContent("");
+    setImage(null);
   }
 
   return (
-    <div style={{border:'1px dashed #aaa', padding:12, borderRadius:8, marginBottom:16}}>
-      <input placeholder="Title" value={title} onChange={e=>setTitle(e.target.value)} style={{width:'100%', padding:8}} />
-      <div style={{marginTop:8}}>
-        <ReactQuill theme="snow" value={content} onChange={setContent} />
+    <form
+      onSubmit={submit}
+      style={{
+        background: "#fff",
+        padding: "16px",
+        borderRadius: "12px",
+        marginBottom: "16px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+      }}
+    >
+      <input
+        placeholder="Title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
+          marginBottom: "12px",
+          fontSize: "16px",
+        }}
+      />
+      <ReactQuill value={content} onChange={setContent} />
+      <div
+        style={{
+          marginTop: "12px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+        }}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => handleImageUpload(e.target.files[0])}
+        />
+        {uploading && <span>Uploading...</span>}
+        {image && (
+          <img
+            src={image}
+            alt="preview"
+            style={{ width: "80px", borderRadius: "8px" }}
+          />
+        )}
       </div>
-      <input type="file" accept="image/*" onChange={handleImage} style={{marginTop:8}} />
-      <div><button disabled={loading} onClick={save}>{initial?._id ? 'Update' : 'Post'}</button></div>
-    </div>
-  )
+      <button
+        type="submit"
+        style={{
+          marginTop: "12px",
+          padding: "12px 16px",
+          borderRadius: "8px",
+          border: "none",
+          background: "#2563eb",
+          color: "#fff",
+          fontWeight: "bold",
+          cursor: "pointer",
+        }}
+      >
+        Post
+      </button>
+    </form>
+  );
 }
